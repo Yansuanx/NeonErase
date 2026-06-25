@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#07030f" />
+  <meta name="description" content="NeonErase — AI驱动的赛博朋克风格水印去除工具，支持图片与视频" />
+  <title>NeonErase · AI水印去除</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Favicon SVG inline -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c3aed'/><text y='24' x='4' font-size='22'>⚡</text></svg>" />
+</head>
+<body>
+
+  <!-- Scan Lines Overlay -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- ── Top Navigation Bar ── -->
+    <nav class="topbar" role="banner">
+      <div class="logo-group">
+        <div class="logo-icon" aria-hidden="true">⚡</div>
+        <div>
+          <div class="logo-text">NeonErase</div>
+        </div>
+        <div class="logo-badge">v2.0</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-icon reset-btn" title="重置" aria-label="重置">↺</button>
+        <button class="btn-icon" title="关于" aria-label="关于软件" onclick="showAbout()">?</button>
+      </div>
+    </nav>
+
+    <!-- ── Hero Section ── -->
+    <header class="hero">
+      <h1 class="hero-title">AI 水印精准去除</h1>
+      <p class="hero-sub">
+        基于智能修复算法，精准识别并消除图片与视频中的水印<br />
+        支持区域标记 · 颜色识别 · 自动检测 · 高清输出
+      </p>
+      <div class="hero-chips">
+        <span class="chip">⚡ 智能修复</span>
+        <span class="chip">🎯 精准识别</span>
+        <span class="chip">🖼 图片支持</span>
+        <span class="chip">🎬 视频支持</span>
+        <span class="chip">⬇ 一键下载</span>
+      </div>
+    </header>
+
+    <!-- ── Tab Switcher ── -->
+    <div class="tab-bar" role="tablist" aria-label="功能切换">
+      <button class="tab-btn active" data-tab="image" role="tab" aria-selected="true">
+        <span class="tab-icon">🖼</span> 图片水印
+      </button>
+      <button class="tab-btn" data-tab="video" role="tab" aria-selected="false">
+        <span class="tab-icon">🎬</span> 视频水印
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         IMAGE PANEL
+    ══════════════════════════════════════ -->
+    <section id="panel-image" class="panel active" role="tabpanel" aria-label="图片水印去除">
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="img-upload-zone" role="button" tabindex="0"
+           aria-label="上传图片，点击或拖拽">
+        <span class="upload-icon">🖼</span>
+        <div class="upload-title">点击上传 或 拖拽图片至此</div>
+        <div class="upload-hint">支持 JPG · PNG · WEBP · BMP · GIF · TIFF</div>
+        <div class="upload-formats">
+          <span class="fmt-tag">JPG</span>
+          <span class="fmt-tag">PNG</span>
+          <span class="fmt-tag">WEBP</span>
+          <span class="fmt-tag">BMP</span>
+          <span class="fmt-tag">GIF</span>
+          <span class="fmt-tag">TIFF</span>
+        </div>
+      </div>
+
+      <!-- File Info -->
+      <div class="video-info-bar" id="img-file-info"></div>
+
+      <!-- Preview Area -->
+      <div class="preview-area" id="img-preview-area" role="img" aria-label="图片预览区域">
+        <div class="preview-placeholder">
+          <span class="ph-icon">🖼</span>
+          上传图片后在此预览效果<br />
+          <small style="font-size:0.7rem;opacity:0.6;">支持拖拽对比滑块查看前后效果</small>
+        </div>
+      </div>
+
+      <!-- Removal Mode -->
+      <div class="control-card">
+        <div class="control-card-title">⚙ 去除模式</div>
+        <div class="mode-grid">
+          <button class="mode-btn selected" data-mode="auto">
+            <span class="mode-icon">🤖</span>自动检测
+          </button>
+          <button class="mode-btn" data-mode="region">
+            <span class="mode-icon">✏️</span>手动标记
+          </button>
+          <button class="mode-btn" data-mode="color">
+            <span class="mode-icon">🎨</span>颜色识别
+          </button>
+          <button class="mode-btn" data-mode="inpaint">
+            <span class="mode-icon">🔮</span>深度修复
+          </button>
+          <button class="mode-btn" data-mode="freq">
+            <span class="mode-icon">📡</span>频域分析
+          </button>
+          <button class="mode-btn" data-mode="edge">
+            <span class="mode-icon">🔬</span>边缘增强
+          </button>
+        </div>
+        <div class="region-hint" style="display:none;">
+          在预览图上 <strong style="color:var(--neon-purple)">拖拽鼠标</strong> 框选水印区域，可标记多个区域
+          <button class="btn-secondary clear-regions-btn"
+                  style="margin-top:8px;width:100%;padding:8px;">清除所有标记</button>
+        </div>
+      </div>
+
+      <!-- Parameters -->
+      <div class="control-card">
+        <div class="control-card-title">🎛 参数调节</div>
+
+        <div class="param-row">
+          <span class="param-label">去除强度</span>
+          <input type="range" class="param-slider" id="img-strength"
+                 min="10" max="100" value="85" aria-label="去除强度" />
+          <span class="param-value" id="img-strength-val">85</span>
+        </div>
+
+        <div class="param-row">
+          <span class="param-label">边缘羽化</span>
+          <input type="range" class="param-slider" id="img-feather"
+                 min="0" max="30" value="12" aria-label="边缘羽化" />
+          <span class="param-value" id="img-feather-val">12</span>
+        </div>
+
+        <div class="param-row">
+          <span class="param-label">修复迭代</span>
+          <input type="range" class="param-slider" id="img-iterations"
+                 min="1" max="5" value="3" aria-label="修复迭代次数" />
+          <span class="param-value" id="img-iterations-val">3</span>
+        </div>
+
+        <!-- Color controls (shown only in color mode) -->
+        <div class="color-row color-control" style="display:none;">
+          <div class="color-swatch">
+            <input type="color" id="target-color" value="#ffffff" aria-label="目标颜色" />
+          </div>
+          <span class="color-label">目标颜色</span>
+        </div>
+
+        <div class="param-row color-control" style="display:none;">
+          <span class="param-label">颜色容差</span>
+          <input type="range" class="param-slider" id="img-tolerance"
+                 min="5" max="120" value="40" aria-label="颜色容差" />
+          <span class="param-value" id="img-tolerance-val">40</span>
+        </div>
+
+        <!-- Toggles -->
+        <div class="toggle-row">
+          <span class="toggle-label">保留原始元数据</span>
+          <label class="toggle-switch" aria-label="保留原始元数据">
+            <input type="checkbox" checked />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">输出透明背景 (PNG)</span>
+          <label class="toggle-switch" aria-label="输出透明背景">
+            <input type="checkbox" />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">高清超分辨率输出</span>
+          <label class="toggle-switch" aria-label="高清超分辨率">
+            <input type="checkbox" />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="img-progress">
+        <div class="progress-header">
+          <span class="progress-status" id="img-progress-status">PROCESSING...</span>
+          <span class="progress-pct" id="img-progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="img-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="result-card" id="img-result-card">
+        <div class="result-card-header">
+          <div class="result-icon">✓</div>
+          <div>
+            <div class="result-title">水印去除完成</div>
+            <div class="result-meta" id="img-result-meta">处理成功 · 可下载结果</div>
+          </div>
+        </div>
+        <div class="result-stats">
+          <div class="stat-box">
+            <span class="stat-val" id="img-stat-pixels">—</span>
+            <span class="stat-key">处理像素</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="img-stat-quality">—</span>
+            <span class="stat-key">质量评分</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="img-stat-time">—</span>
+            <span class="stat-key">处理耗时</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="btn-row">
+        <button class="btn-primary glow-pulse" id="img-process-btn" disabled aria-label="开始去除水印">
+          ⚡ 开始去除水印
+        </button>
+        <button class="btn-download" id="img-download-btn" disabled aria-label="下载结果图片">
+          ⬇ 下载
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary reset-btn" style="flex:1;" aria-label="重置">
+          ↺ 重置
+        </button>
+        <button class="btn-secondary clear-regions-btn" style="flex:1;" aria-label="清除标记">
+          ✕ 清除标记
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════
+         VIDEO PANEL
+    ══════════════════════════════════════ -->
+    <section id="panel-video" class="panel" role="tabpanel" aria-label="视频水印去除">
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="vid-upload-zone" role="button" tabindex="0"
+           aria-label="上传视频，点击或拖拽">
+        <span class="upload-icon">🎬</span>
+        <div class="upload-title">点击上传 或 拖拽视频至此</div>
+        <div class="upload-hint">支持 MP4 · WEBM · MOV · AVI · MKV</div>
+        <div class="upload-formats">
+          <span class="fmt-tag">MP4</span>
+          <span class="fmt-tag">WEBM</span>
+          <span class="fmt-tag">MOV</span>
+          <span class="fmt-tag">AVI</span>
+          <span class="fmt-tag">MKV</span>
+        </div>
+      </div>
+
+      <!-- Video Info -->
+      <div class="video-info-bar" id="vid-file-info"></div>
+
+      <!-- Video Preview -->
+      <div class="video-preview-wrap" id="vid-preview-wrap">
+        <div class="preview-placeholder">
+          <span class="ph-icon">🎬</span>
+          上传视频后在此预览<br />
+          <small style="font-size:0.7rem;opacity:0.6;">可在视频上框选水印区域</small>
+        </div>
+      </div>
+
+      <!-- Removal Mode -->
+      <div class="control-card">
+        <div class="control-card-title">⚙ 去除模式</div>
+        <div class="mode-grid">
+          <button class="mode-btn selected" data-mode="auto">
+            <span class="mode-icon">🤖</span>自动检测
+          </button>
+          <button class="mode-btn" data-mode="region">
+            <span class="mode-icon">✏️</span>手动标记
+          </button>
+          <button class="mode-btn" data-mode="color">
+            <span class="mode-icon">🎨</span>颜色识别
+          </button>
+          <button class="mode-btn" data-mode="temporal">
+            <span class="mode-icon">⏱</span>时序分析
+          </button>
+          <button class="mode-btn" data-mode="static">
+            <span class="mode-icon">📌</span>静态水印
+          </button>
+          <button class="mode-btn" data-mode="dynamic">
+            <span class="mode-icon">💫</span>动态水印
+          </button>
+        </div>
+        <div class="region-hint" style="display:none;">
+          在视频预览上 <strong style="color:var(--neon-purple)">拖拽鼠标</strong> 框选水印区域<br />
+          标记的区域将应用于所有帧
+          <button class="btn-secondary clear-regions-btn"
+                  style="margin-top:8px;width:100%;padding:8px;">清除所有标记</button>
+        </div>
+      </div>
+
+      <!-- Parameters -->
+      <div class="control-card">
+        <div class="control-card-title">🎛 视频参数</div>
+
+        <div class="param-row">
+          <span class="param-label">去除强度</span>
+          <input type="range" class="param-slider" id="vid-strength"
+                 min="10" max="100" value="90" aria-label="去除强度" />
+          <span class="param-value" id="vid-strength-val">90</span>
+        </div>
+
+        <div class="param-row">
+          <span class="param-label">边缘羽化</span>
+          <input type="range" class="param-slider" id="vid-feather"
+                 min="0" max="30" value="10" aria-label="边缘羽化" />
+          <span class="param-value" id="vid-feather-val">10</span>
+        </div>
+
+        <div class="param-row">
+          <span class="param-label">输出码率</span>
+          <input type="range" class="param-slider" id="vid-bitrate"
+                 min="1" max="20" value="8" aria-label="输出码率" />
+          <span class="param-value" id="vid-bitrate-val">8</span>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">保留原始音轨</span>
+          <label class="toggle-switch" aria-label="保留音轨">
+            <input type="checkbox" checked />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">逐帧精准处理</span>
+          <label class="toggle-switch" aria-label="逐帧处理">
+            <input type="checkbox" checked />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">时序一致性增强</span>
+          <label class="toggle-switch" aria-label="时序一致性">
+            <input type="checkbox" />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="vid-progress">
+        <div class="progress-header">
+          <span class="progress-status" id="vid-progress-status">PROCESSING...</span>
+          <span class="progress-pct" id="vid-progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="vid-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="result-card" id="vid-result-card">
+        <div class="result-card-header">
+          <div class="result-icon">✓</div>
+          <div>
+            <div class="result-title">视频水印去除完成</div>
+            <div class="result-meta">处理成功 · 可下载结果</div>
+          </div>
+        </div>
+        <div class="result-stats">
+          <div class="stat-box">
+            <span class="stat-val" id="vid-stat-frames">—</span>
+            <span class="stat-key">处理帧数</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="vid-stat-quality">—</span>
+            <span class="stat-key">质量评分</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val" id="vid-stat-time">—</span>
+            <span class="stat-key">视频时长</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="btn-row">
+        <button class="btn-primary glow-pulse" id="vid-process-btn" disabled aria-label="开始处理视频">
+          ⚡ 开始去除水印
+        </button>
+        <button class="btn-download" id="vid-download-btn" disabled aria-label="下载结果视频">
+          ⬇ 下载
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary reset-btn" style="flex:1;" aria-label="重置">
+          ↺ 重置
+        </button>
+        <button class="btn-secondary clear-regions-btn" style="flex:1;" aria-label="清除标记">
+          ✕ 清除标记
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+      <div class="footer-text">
+        <span>NeonErase</span> v2.0 · 纯前端 · 本地处理 · 隐私安全 · 无需上传服务器
+      </div>
+    </footer>
+
+  </div><!-- /app-wrapper -->
+
+  <!-- About Modal -->
+  <div id="about-modal" style="
+    display:none;position:fixed;inset:0;z-index:9000;
+    background:rgba(7,3,15,0.88);backdrop-filter:blur(16px);
+    align-items:center;justify-content:center;padding:24px;
+  ">
+    <div style="
+      background:var(--bg-panel);border:1px solid var(--border-glow);
+      border-radius:var(--radius-lg);padding:32px 28px;max-width:420px;width:100%;
+      box-shadow:var(--shadow-purple);position:relative;
+    ">
+      <button onclick="closeAbout()" style="
+        position:absolute;top:16px;right:16px;background:none;border:none;
+        color:var(--text-muted);font-size:1.2rem;cursor:pointer;
+      ">✕</button>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:3rem;margin-bottom:10px;">⚡</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;
+          background:linear-gradient(90deg,var(--neon-purple),var(--neon-pink));
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          NeonErase
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;
+          color:var(--text-muted);letter-spacing:0.1em;margin-top:4px;">
+          AI WATERMARK REMOVAL ENGINE v2.0
+        </div>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;margin-bottom:18px;">
+        NeonErase 是一款纯前端水印去除工具，所有处理均在您的浏览器本地完成，
+        文件不会上传至任何服务器，完全保护您的隐私安全。
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+        <div style="background:rgba(185,79,255,0.08);border:1px solid var(--border-subtle);
+          border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--neon-purple);">6+</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;">去除模式</div>
+        </div>
+        <div style="background:rgba(185,79,255,0.08);border:1px solid var(--border-subtle);
+          border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--neon-cyan);">100%</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;">本地处理</div>
+        </div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;
+        text-align:center;letter-spacing:0.06em;">
+        BUILT WITH ❤ · CYBERPUNK PURPLE THEME
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JS -->
+  <script src="js/app.js"></script>
+
+  <script>
+    function showAbout() {
+      const modal = document.getElementById('about-modal');
+      modal.style.display = 'flex';
+    }
+    function closeAbout() {
+      const modal = document.getElementById('about-modal');
+      modal.style.display = 'none';
+    }
+    document.getElementById('about-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeAbout();
+    });
+  </script>
+
+</body>
+</html>
